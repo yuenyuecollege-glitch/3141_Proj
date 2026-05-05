@@ -12,9 +12,10 @@ figure(1);
 imshow(I_rgb);
 
 % Construct meshgrid of scale values
-[c_scale, y_scale] = meshgrid(0:0.05:2.5);
+[c_scale, y_scale] = meshgrid(0:0.1:2);
 
 compression_percent = zeros(size(c_scale));
+mse = zeros(size(c_scale));
 
 fprintf("Total columns: %d\n", length(c_scale));
 
@@ -32,6 +33,11 @@ for c = 1:length(c_scale(1,:))
 
         percent = total_zero_coefficients / total_coefficients * 100;
         compression_percent(y, c) = percent;
+        
+        output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale(y, 1), c_scale(1, c), 8);
+        trimmed_output_img = output_img(1:size(I_rgb, 1), 1:size(I_rgb, 2), :);
+        err = immse(I_rgb, im2uint8(trimmed_output_img));
+        mse(y, c) = err;
     end
 
     fprintf('Finished column %d\n', c);
@@ -43,3 +49,11 @@ xlabel("Colour scale");
 ylabel("Luminance scale");
 zlabel("Percentage zero coefficient");
 title("Information loss vs channel scales");
+
+figure(3);
+surf(c_scale, y_scale, mse);
+xlabel("Colour scale");
+ylabel("Luminance scale");
+zlabel("MSE");
+title("Information loss vs channel scales");
+
