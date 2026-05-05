@@ -3,22 +3,28 @@ clear; clc; close all;
 
 % 1. Read the color image
 % 'peppers.png' is a standard built-in MATLAB color test image
-I_rgb = imread('input_images/DSCF5372.JPG'); 
+[I_rgb, map] = imread('inputs/marmot.png'); 
+
+if ~isempty(map)
+    I_rgb = ind2rgb(I_rgb, map); % Converts to M-by-N-by-3 double array [0,1]
+end
 
 figure(1);
 imshow(I_rgb);
 
-y_scale = 5;
-c_scale = 3;
+y_scale = 0;
+c_scale = 0;
+
+B = 200;
 
 [dct_Y, dct_Cb, dct_Cr] = dct_encoder_yCbCr( ...
     I_rgb, ...
     y_scale, ...
     c_scale, ...
-    8 ...
+    B ...
 );
 
-output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale, c_scale, 8);
+output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale, c_scale, B);
 
 figure(2);
 imshow(output_img);

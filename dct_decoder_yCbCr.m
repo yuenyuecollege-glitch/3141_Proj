@@ -21,15 +21,24 @@ Q_C = [17  18  24  47  99  99  99  99;
        99  99  99  99  99  99  99  99;
        99  99  99  99  99  99  99  99];
 
+% Modify our matricies to comply with the block size
+if (B > 8)
+    Q_Y = padarray(Q_Y, [B-8 B-8], 99, 'post');
+    Q_C = padarray(Q_C, [B-8 B-8], 99, 'post');
+elseif (B < 8)
+    Q_Y = Q_Y(1:B, 1:B);
+    Q_C = Q_C(1:B, 1:B);
+end
+
 Q_Y_scaled = max(1, round(Q_Y * y_scale));
 Q_C_scaled = max(1, round(Q_C * c_scale));
 
 decode_Y = @(block_struct) idct2(block_struct.data .* Q_Y_scaled);
 decode_C = @(block_struct) idct2(block_struct.data .* Q_C_scaled);
 
-Y_rec  = blockproc(double(dct_Y),  [B B], decode_Y);
-Cb_rec = blockproc(double(dct_Cb), [B B], decode_C);
-Cr_rec = blockproc(double(dct_Cr), [B B], decode_C);
+Y_rec  = blockproc(double(dct_Y),  [B B], decode_Y, 'PadPartialBlocks', true);
+Cb_rec = blockproc(double(dct_Cb), [B B], decode_C, 'PadPartialBlocks', true);
+Cr_rec = blockproc(double(dct_Cr), [B B], decode_C, 'PadPartialBlocks', true);
 
 I_ycbcr_rec = cat(3, Y_rec, Cb_rec, Cr_rec) / 255;
 I_rgb_rec = ycbcr2rgb(I_ycbcr_rec);
