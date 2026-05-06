@@ -1,4 +1,4 @@
 Project regarding image coding (JPEG)
 
 Point 1
-Segmentisation does not affect sum squared error, it only affects computation time
+Segmentisation (Eg: 64x64) does not affect sum squared error, it only affects computation time
