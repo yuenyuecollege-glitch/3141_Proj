@@ -1,4 +1,4 @@
-% MATLAB Script for Color Image 2D DCT Encoding using YCbCr
+    % MATLAB Script for Color Image 2D DCT Encoding using YCbCr
 clear; clc; close all;
 
 % 1. Read the color image
@@ -12,10 +12,10 @@ end
 figure(1);
 imshow(I_rgb);
 
-y_scale = 0;
-c_scale = 0;
+y_scale = 10;
+c_scale = 10;
 
-B = 200;
+B = 8;
 
 [dct_Y, dct_Cb, dct_Cr] = dct_encoder_yCbCr( ...
     I_rgb, ...
@@ -23,6 +23,22 @@ B = 200;
     c_scale, ...
     B ...
 );
+
+total_coeffs = numel(dct_Y) + numel(dct_Cb) + numel(dct_Cr);
+    
+    kept_coeffs = nnz(dct_Y) + nnz(dct_Cb) + nnz(dct_Cr);
+    removed_coeffs = total_coeffs - kept_coeffs;
+    
+    compression_ratio = total_coeffs / kept_coeffs;
+    percent_removed = (removed_coeffs / total_coeffs) * 100;
+    
+    fprintf('\n--- Compression Results (Scale: %d, Block: %d) ---\n', y_scale, B);
+    fprintf('Total Coefficients:    %d\n', total_coeffs);
+    fprintf('Coefficients Kept:     %d\n', kept_coeffs);
+    fprintf('Coefficients Removed:  %d\n', removed_coeffs);
+    fprintf('Compression Ratio:     %.2f : 1\n', compression_ratio);
+    fprintf('Percent Data Removed:  %.2f%%\n', percent_removed);
+    fprintf('--------------------------------------------------\n\n');
 
 output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale, c_scale, B);
 
