@@ -1,7 +1,22 @@
-function [output_img] = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale, c_scale, B)
+% Written by Jack Bradley 33114145
+% Adapted from https://www.mathworks.com/help/images/discrete-cosine-transform.html
+% and https://pomodo.io/tech-archive/jpeg-definitive-guide/
+%
+% Last modified: 05/05/2026
 
+
+function [output_img] = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale, c_scale, B, useQuantMtx)
+arguments
+        dct_Y              % Required
+        dct_Cb             % Required
+        dct_Cr             % Required
+        y_scale            % Required
+        c_scale            % Required
+        B = 8              % Optional (default=8)   
+        useQuantMtx = 1    % Optional (default=0) [0=no 1=yes]
+end
 % Standard ISO JPEG Quantization Matrices
-% Luminance (Brightness) Matrix - Preserves structural detail
+% Luminance (Brightness) Matrix - Aim to preserve structural detail
 Q_Y = [16  11  10  16  24  40  51  61;
        12  12  14  19  26  58  60  55;
        14  13  16  24  40  57  69  56;
@@ -11,7 +26,7 @@ Q_Y = [16  11  10  16  24  40  51  61;
        49  64  78  87 103 121 120 101;
        72  92  95  98 112 100 103  99];
 
-% Chrominance (Color) Matrix - Aggressively destroys high-frequency color
+% Chrominance (Colour) Matrix - destroys high-frequency colour information
 Q_C = [17  18  24  47  99  99  99  99;
        18  21  26  66  99  99  99  99;
        24  26  56  99  99  99  99  99;
@@ -22,20 +37,27 @@ Q_C = [17  18  24  47  99  99  99  99;
        99  99  99  99  99  99  99  99];
 
 % Modify our matricies to comply with the block size
-if (B > 8)
+if (B > 8)      % pad with 99s if bigger
     Q_Y = padarray(Q_Y, [B-8 B-8], 99, 'post');
     Q_C = padarray(Q_C, [B-8 B-8], 99, 'post');
-elseif (B < 8)
+elseif (B < 8)  % trim existing matrix otherwise
     Q_Y = Q_Y(1:B, 1:B);
     Q_C = Q_C(1:B, 1:B);
 end
 
-Q_Y_scaled = max(1, round(Q_Y * y_scale));
-Q_C_scaled = max(1, round(Q_C * c_scale));
+if (useQuantMtx == 0)
+    Q_Y_scaled = max(1, ones(size(Q_Y)) * y_scale);
+    Q_C_scaled = max(1, ones(size(Q_C)) * c_scale);
+else
+    Q_Y_scaled = max(1, round(Q_Y * y_scale));
+    Q_C_scaled = max(1, round(Q_C * c_scale));
+end
 
 decode_Y = @(block_struct) idct2(block_struct.data .* Q_Y_scaled);
 decode_C = @(block_struct) idct2(block_struct.data .* Q_C_scaled);
 
+% NOTE: You will have to remove this padding manually after decoding
+% to get an image with the same resolution as the input
 Y_rec  = blockproc(double(dct_Y),  [B B], decode_Y, 'PadPartialBlocks', true);
 Cb_rec = blockproc(double(dct_Cb), [B B], decode_C, 'PadPartialBlocks', true);
 Cr_rec = blockproc(double(dct_Cr), [B B], decode_C, 'PadPartialBlocks', true);

@@ -14,14 +14,15 @@ imshow(I_rgb);
 
 y_scale = 10;
 c_scale = 10;
-
 B = 8;
+useQuantisationMatrix = 1;  % 0=no, 1=yes
 
 [dct_Y, dct_Cb, dct_Cr] = dct_encoder_yCbCr( ...
     I_rgb, ...
     y_scale, ...
     c_scale, ...
-    B ...
+    B, ...
+    useQuantisationMatrix ...
 );
 
 total_coeffs = numel(dct_Y) + numel(dct_Cb) + numel(dct_Cr);
@@ -40,7 +41,7 @@ total_coeffs = numel(dct_Y) + numel(dct_Cb) + numel(dct_Cr);
     fprintf('Percent Data Removed:  %.2f%%\n', percent_removed);
     fprintf('--------------------------------------------------\n\n');
 
-output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale, c_scale, B);
+output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale, c_scale, B, useQuantisationMatrix);
 
 figure(2);
 imshow(output_img);

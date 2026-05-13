@@ -28,6 +28,19 @@ figure('Name', 'DCT Quantization Process', 'Position', [100, 100, 1000, 800]);
 
 cmap = parula; cmap(1,:) = [1 1 1]; 
 
+figure(1)
+imagesc(abs(block_8x8)); colormap(cmap);
+title('Raw image values');
+axis off; hold on;
+% Overlay the numbers
+for i = 1:8
+    for j = 1:8
+        text(j, i, sprintf('%.1f', block_8x8(i,j)), ...
+            'HorizontalAlignment', 'center', 'FontSize', 8);
+    end
+end
+
+figure(2)
 % --- Subplot 1: Raw DCT Coefficients ---
 subplot(2,2,1);
 imagesc(abs(dct_raw)); colormap(cmap);

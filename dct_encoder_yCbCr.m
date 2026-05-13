@@ -1,5 +1,18 @@
-function [dct_Y, dct_Cb, dct_Cr] = dct_encoder_yCbCr(input_img, y_scale, c_scale, B)
+% Written by Jack Bradley 33114145
+% Adapted from https://www.mathworks.com/help/images/discrete-cosine-transform.html
+% and https://pomodo.io/tech-archive/jpeg-definitive-guide/
+%
+% Last modified: 05/05/2026
 
+
+function [dct_Y, dct_Cb, dct_Cr] = dct_encoder_yCbCr(input_img, y_scale, c_scale, B, useQuantMtx)
+arguments
+        input_img          % Required
+        y_scale            % Required
+        c_scale            % Required
+        B = 8              % Optional (default=8)   
+        useQuantMtx = 1    % Optional (default=0) [0=no 1=yes]
+end
 % Convert to double for mathematical precision
 I_rgb = im2double(input_img); 
 
@@ -40,13 +53,20 @@ elseif (B < 8)
     Q_C = Q_C(1:B, 1:B);
 end
 
-Q_Y_scaled = max(1, round(Q_Y * y_scale));
-Q_C_scaled = max(1, round(Q_C * c_scale));
+if (useQuantMtx == 0)
+    Q_Y_scaled = max(1, ones(size(Q_Y)) * y_scale);
+    Q_C_scaled = max(1, ones(size(Q_C)) * c_scale);
+else
+    Q_Y_scaled = max(1, round(Q_Y * y_scale));
+    Q_C_scaled = max(1, round(Q_C * c_scale));
+end
 
 % 2D DCT in BxB blocks on each channel
 encode_Y = @(block_struct) round(dct2(block_struct.data) ./ Q_Y_scaled);
 encode_C = @(block_struct) round(dct2(block_struct.data) ./ Q_C_scaled);
 
+% NOTE: You will have to remove this padding manually after decoding
+% to get an image with the same resolution as the input
 dct_Y  = int16(blockproc(Y,  [B B], encode_Y, 'PadPartialBlocks', true));
 dct_Cb = int16(blockproc(Cb, [B B], encode_C, 'PadPartialBlocks', true));
 dct_Cr = int16(blockproc(Cr, [B B], encode_C, 'PadPartialBlocks', true));

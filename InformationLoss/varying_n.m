@@ -14,7 +14,7 @@ imshow(I_rgb);
 % Set n values to test
 n_values = 2:1:90;
 compression_percent = zeros(size(n_values));
-mse = zeros(size(n_values));
+sse = zeros(size(n_values));
 
 % Calculate information loss
 for n=1:length(n_values)
@@ -34,8 +34,8 @@ for n=1:length(n_values)
 
     output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, 0, 0, n_values(n));
     trimmed_output_img = output_img(1:size(I_rgb, 1), 1:size(I_rgb, 2), :);
-    err = immse(I_rgb, im2uint8(trimmed_output_img));
-    mse(n) = err;
+    diff = im2double(I_rgb) - trimmed_output_img;
+    sse(n) = sum(diff(:).^2);
 end
 
 figure(2);
@@ -44,9 +44,9 @@ xlabel("N value");
 
 yyaxis left;
 plot(n_values, compression_percent);
-ylabel("Percentage zero coefficient");
+ylabel("Compression ratio (%)");
 
 yyaxis right;
-plot(n_values, mse);
-ylabel("MSE");
+plot(n_values, sse);
+ylabel("SSE");
 

@@ -12,7 +12,7 @@ figure(1);
 imshow(I_rgb);
 
 % Construct meshgrid of scale values
-[c_scale, y_scale] = meshgrid(2:20:400);
+scales = linspace(2, 400, 20);
 
 compression_percent = zeros(size(c_scale));
 sse = zeros(size(c_scale));
@@ -42,7 +42,7 @@ for c = 1:length(c_scale(1,:))
         diff = im2double(I_rgb) - trimmed_output_img;
         sse(y, c) = sum(diff(:).^2);
     end
-
+sr
     fprintf('Finished column %d\n', c);
 end
 
