@@ -14,49 +14,41 @@ imshow(I_rgb);
 % Construct meshgrid of scale values
 scales = linspace(2, 400, 20);
 
-compression_percent = zeros(size(c_scale));
-sse = zeros(size(c_scale));
+compression_percent = zeros(size(scales));
+sse = zeros(size(scales));
 
-fprintf("Total columns: %d\n", length(c_scale));
+fprintf("Total columns: %d\n", length(scales));
 
-for c = 1:length(c_scale(1,:))
-    for y = 1:length(y_scale(:, 1))
-        [dct_Y, dct_Cb, dct_Cr] = dct_encoder_yCbCr( ...
-            I_rgb, ...
-            y_scale(y, 1), ...
-            c_scale(1, c), ...
-            8, ...
-            0 ...
-        );
+for a = 1:length(scales)
+    [dct_Y, dct_Cb, dct_Cr] = dct_encoder_yCbCr( ...
+        I_rgb, ...
+        scales(a), ...
+        scales(a), ...
+        8, ...
+        0 ...
+    );
 
-        total_coefficients = 3 * prod(size(dct_Y));
-        total_zero_coefficients = sum(dct_Y == 0, 'all') + sum(dct_Cb == 0, 'all') + sum(dct_Cr == 0, 'all');
+    total_coefficients = 3 * prod(size(dct_Y));
+    total_zero_coefficients = sum(dct_Y == 0, 'all') + sum(dct_Cb == 0, 'all') + sum(dct_Cr == 0, 'all');
 
-        percent = total_zero_coefficients / total_coefficients * 100;
-        compression_percent(y, c) = percent;
-        
-        output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale(y, 1), c_scale(1, c), 8, 0);
-        trimmed_output_img = output_img(1:size(I_rgb, 1), 1:size(I_rgb, 2), :);
-        % err = immse(I_rgb, im2uint8(trimmed_output_img));
+    percent = total_zero_coefficients / total_coefficients * 100;
+    compression_percent(a) = percent;
+    
+    output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, scales(a), scales(a), 8, 0);
+    trimmed_output_img = output_img(1:size(I_rgb, 1), 1:size(I_rgb, 2), :);
 
-        diff = im2double(I_rgb) - trimmed_output_img;
-        sse(y, c) = sum(diff(:).^2);
-    end
-sr
-    fprintf('Finished column %d\n', c);
+    diff = im2double(I_rgb) - trimmed_output_img;
+    sse(a) = sum(diff(:).^2);
 end
 
 figure(2);
-surf(c_scale, y_scale, compression_percent);
-xlabel("Colour scale");
-ylabel("Luminance scale");
-zlabel("Percentage zero coefficient");
-title("Information loss vs channel scales");
+yyaxis left;
+plot(scales, sse);
+ylabel("SSE")
 
-figure(3);
-surf(c_scale, y_scale, sse);
-xlabel("Colour scale");
-ylabel("Luminance scale");
-zlabel("SSE");
-title("Information loss vs channel scales");
+yyaxis right;
+plot(scales, compression_percent);
+ylabel("Compression (%)")
 
+xlabel("Scale");
+title("Compression and SSE vs scale")

@@ -12,8 +12,8 @@ end
 figure(1);
 imshow(I_rgb);
 
-y_scale = 10;
-c_scale = 10;
+y_scale = 20;
+c_scale = 0;
 B = 8;
 useQuantisationMatrix = 1;  % 0=no, 1=yes
 
@@ -27,25 +27,33 @@ useQuantisationMatrix = 1;  % 0=no, 1=yes
 
 total_coeffs = numel(dct_Y) + numel(dct_Cb) + numel(dct_Cr);
     
-    kept_coeffs = nnz(dct_Y) + nnz(dct_Cb) + nnz(dct_Cr);
-    removed_coeffs = total_coeffs - kept_coeffs;
-    
-    compression_ratio = total_coeffs / kept_coeffs;
-    percent_removed = (removed_coeffs / total_coeffs) * 100;
-    
-    fprintf('\n--- Compression Results (Scale: %d, Block: %d) ---\n', y_scale, B);
-    fprintf('Total Coefficients:    %d\n', total_coeffs);
-    fprintf('Coefficients Kept:     %d\n', kept_coeffs);
-    fprintf('Coefficients Removed:  %d\n', removed_coeffs);
-    fprintf('Compression Ratio:     %.2f : 1\n', compression_ratio);
-    fprintf('Percent Data Removed:  %.2f%%\n', percent_removed);
-    fprintf('--------------------------------------------------\n\n');
+kept_coeffs = nnz(dct_Y) + nnz(dct_Cb) + nnz(dct_Cr);
+removed_coeffs = total_coeffs - kept_coeffs;
+
+compression_ratio = total_coeffs / kept_coeffs;
+percent_removed = (removed_coeffs / total_coeffs) * 100;
+
 
 output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, y_scale, c_scale, B, useQuantisationMatrix);
 
-figure(2);
-imshow(output_img);
+trimmed_output_img = output_img(1:size(I_rgb, 1), 1:size(I_rgb, 2), :);
 
+diff = im2double(I_rgb) - trimmed_output_img;
+sse = sum(diff(:).^2);
+
+fprintf('\n--- Compression Results (Scale: %d, Block: %d) ---\n', y_scale, B);
+fprintf('Total Coefficients:    %d\n', total_coeffs);
+fprintf('Coefficients Kept:     %d\n', kept_coeffs);
+fprintf('Coefficients Removed:  %d\n', removed_coeffs);
+fprintf('Compression Ratio:     %.2f : 1\n', compression_ratio);
+fprintf('Percent Data Removed:  %.2f%%\n', percent_removed);
+fprintf('SSE:  %d\n', sse);
+fprintf('--------------------------------------------------\n\n');
+
+% 1.935415e+04
+
+figure(2);
+imshow(trimmed_output_img);
 
 
 
