@@ -12,7 +12,7 @@ figure(1);
 imshow(I_rgb);
 
 % Construct meshgrid of scale values
-scales = linspace(2, 200, 15);
+scales = linspace(2, 400, 20);
 
 compression_percent = zeros(size(scales));
 sse = zeros(size(scales));
@@ -20,20 +20,21 @@ sse = zeros(size(scales));
 fprintf("Total columns: %d\n", length(scales));
 
 for a = 1:length(scales)
-    [dct_R, dct_G, dct_B] = dct_encoder_rgb( ...
+    [dct_Y, dct_Cb, dct_Cr] = dct_encoder_yCbCr( ...
         I_rgb, ...
+        scales(a), ...
         scales(a), ...
         8, ...
         0 ...
     );
 
-    total_coefficients = 3 * prod(size(dct_R));
-    total_zero_coefficients = sum(dct_R == 0, 'all') + sum(dct_G == 0, 'all') + sum(dct_B == 0, 'all');
+    total_coefficients = 3 * prod(size(dct_Y));
+    total_zero_coefficients = sum(dct_Y == 0, 'all') + sum(dct_Cb == 0, 'all') + sum(dct_Cr == 0, 'all');
 
     percent = total_zero_coefficients / total_coefficients * 100;
     compression_percent(a) = percent;
     
-    output_img = dct_decoder_rgb(dct_R, dct_G, dct_B, scales(a), 8, 0);
+    output_img = dct_decoder_yCbCr(dct_Y, dct_Cb, dct_Cr, scales(a), scales(a), 8, 0);
     trimmed_output_img = output_img(1:size(I_rgb, 1), 1:size(I_rgb, 2), :);
 
     diff = im2double(I_rgb) - trimmed_output_img;
@@ -50,4 +51,4 @@ plot(scales, compression_percent);
 ylabel("Compression (%)")
 
 xlabel("Scale");
-title("Compression and SSE vs scale (RGB)");
+title("Compression and SSE vs scale")

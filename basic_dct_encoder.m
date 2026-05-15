@@ -12,8 +12,8 @@ end
 figure(1);
 imshow(I_rgb);
 
-y_scale = 20;
-c_scale = 0;
+y_scale = 1;
+c_scale = 2;
 B = 8;
 useQuantisationMatrix = 1;  % 0=no, 1=yes
 
